@@ -6,9 +6,25 @@
 
 <button class="btn btn-primary" @onclick="IncrementCount">Click me</button>
 
+<input @ref=InputField @onfocus="HandleFocus" value="@data"/>
+
+<button class="btn btn-primary" @onclick="ChangeFocus">Click me to change focus</button>
+
 
 @code {
     private int currentCount = 0;
+    private ElementReference InputField;
+    private string data;
+
+    private async Task ChangeFocus()
+    {
+        await InputField.FocusAsync();
+    }
+
+    private async Task HandleFocus()
+    {
+        data = "Received focus";
+    }
 
     private void IncrementCount(MouseEventArgs e)
     {
