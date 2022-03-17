@@ -7,14 +7,51 @@
 
 <button class="btn btn-primary" @onclick='mouseEvent => HandleClick(mouseEvent, "Hello")'>Click me</button>
 
+<input value=@data @onkeypress="ProcessKeyPress" @onkeypress:preventDefault />
+
+<div @onclick="HandleDivClick">
+    <button class="btn btn-primary" @onclick="IncrementCount" @onclick:stopPropagation>Click me</button>
+    <input value=@data @onkeypress="ProcessKeyPress" @onkeypress:preventDefault />
+</div>
+
 @code {
     private int currentCount = 0;
+    private string data;
+
+    private async Task HandleDivClick()
+    {
+        await JS.InvokeVoidAsync("alert", "Div click");
+    }
+
+    private async Task ProcessKeyPress(KeyboardEventArgs e)
+    {
+        if (e.Key == "@")
+        {
+            await JS.InvokeVoidAsync("alert", "You pressed @");
+        }
+        else
+        {
+            data += e.Key.ToUpper();
+        }
+    }
 
     private async Task HandleClick(MouseEventArgs e, string msg)
     {
         if (e.CtrlKey) // Ctrl key pressed as well
         {
             await JS.InvokeVoidAsync("alert", msg);
+            currentCount += 5;
+        }
+        else
+        {
+            currentCount++;
+        }
+    }
+
+    private void IncrementCount(MouseEventArgs e)
+    {
+        if (e.CtrlKey) // Ctrl key pressed as well
+        {
             currentCount += 5;
         }
         else
