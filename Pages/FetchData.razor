@@ -4,6 +4,8 @@
 
 @using BlazorApp.Data
 @inject WeatherForecastService ForecastService
+@inject IJSRuntime JS
+@implements IDisposable
 
 <h1>Weather forecast</h1>
 
@@ -57,14 +59,54 @@ else
                 </tr>
             }
         </tbody>
+        <tfoot>
+            <tr>
+                <td><button onclick="calculateAverages()">Averages</button></td>
+                <td></td>
+                <td id="avgC"></td>
+                <td></td>
+                <td id="avgF"></td>
+                <td></td>
+                <td></td>
+            </tr>
+        </tfoot>
     </table>
+    <div @ref=graphPlaceholder></div>
 }
 
 @code {
-    private WeatherForecast[]? forecasts;
+    private static WeatherForecast[] forecasts;
+    private ElementReference graphPlaceholder;
+    private DotNetObjectReference<FetchData> objRef;
 
     protected override async Task OnInitializedAsync()
     {
         forecasts = await ForecastService.GetForecastAsync(DateTime.Now);
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            objRef = DotNetObjectReference.Create(this);
+            await JS.InvokeAsync<string>("populateObjectRef", objRef);
+        }
+    }
+
+    [JSInvokable]
+    public static async Task<decimal[]> CalculateAveragesAsync()
+    {
+        var forecastTemperatures = from f in forecasts
+                                   select (f.TemperatureF, f.TemperatureC);
+
+        var avgF = await Task.FromResult(forecastTemperatures.Average(t => t.TemperatureF));
+        var avgC = await Task.FromResult(forecastTemperatures.Average(t => t.TemperatureC));
+
+        return new[] { (decimal)avgF, (decimal)avgC };
+    }
+
+    public void Dispose()
+    {
+        objRef?.Dispose();
     }
 }

@@ -26,8 +26,25 @@
         <a href="" class="reload">Reload</a>
         <a class="dismiss">🗙</a>
     </div>
-
-    <script src="_framework/blazor.server.js"></script>
+    
+    @*<script src="_framework/blazor.server.js"></script>*@
     <script src="js/node_modules/canvas-gauges/gauge.min.js"></script>
+    <script src="https://cdn.plot.ly/plotly-2.3.1.min.js"></script>
+    <script>
+        window.showGraph = (graphDiv, data) => {
+            var plotData = {y: data, type: 'lines'};
+            Plotly.newPlot(graphDiv, [plotData], {title: 'Celsius Temperatures by Day'});
+        }
+        var objectRef;
+    
+        window.populateObjectRef = (ref) => {
+            objectRef = ref;
+        };
+        window.calculateAverages = async () => {
+            var averages = objectRef.invokeMethodAsync('CalculateAveragesAsync');
+            $('#avgF').html(averages[0]);
+            $('#avgC').html(averages[1]);
+        };
+    </script>
 </body>
 </html>
